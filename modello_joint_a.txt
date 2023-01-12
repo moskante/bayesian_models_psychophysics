@@ -1,0 +1,60 @@
+model {
+
+ for (i in 1:noss2){
+ 
+    y2[i]~ dbinom(mu2[i],n2[i])
+    ex2[i]<--alpha2[subject2[i],mask2[i]]*beta2[subject2[i],mask2[i]]+beta2[subject2[i],mask2[i]]*x2[i]
+    mu2[i]<-phi(ex2[i])
+     ldx[i]=logdensity.bin(y2[i], mu2[i],n2[i])
+  }
+  
+  loglik=sum(ldx)
+    
+    
+    
+ for (i in 1:noss1){
+    y1[i]~ dbinom(mu1[i],n1[i])
+    ex1[i]<--alpha1[subject1[i],vibration1[i]+1]*beta1[subject1[i],vibration1[i]+1]+beta1[subject1[i],vibration1[i]+1]*x1[i]    
+    mu1[i]<-phi(ex1[i])
+    }
+    
+
+    
+ for (i in 1:nsubj2){
+  for (h in 1:2)
+    {alpha2[i,h]~dnorm(aa2[h],taua2[h])
+      beta2[i,h]~dnorm(bb2[h],taub2[h])
+      }
+    }
+    
+    
+    for (h in 1:2)
+      {
+        for (i in 1:nsubj1){
+      alpha1[i,h]~dnorm(aa1[h],taua1[h])
+      beta1[i,h]~dnorm(bb1[h],taub1[h])
+            }
+      
+}
+
+for (k in 1:2)
+{    
+  taua2[k]~dgamma(1,.001)
+  taub2[k]~dgamma(1,.001)
+    
+  
+ aa2[k]~dnorm(aa1[k]*3.434808/8.5,s1[k])
+ bb2[k]~dnorm(bb1[k]*8.5/3.434808,s2[k])
+      aa1[k]~dnorm(0,tauaa1)
+      bb1[k]~dnorm(0,taubb)
+  taua1[k]~dgamma(1,.01)
+  taub1[k]~dgamma(1,.01)
+
+s1[k]~dgamma(1,.01)
+s2[k]~dgamma(1,.01)}
+ 
+tauaa1~dgamma(1,.01)
+tauaa2~dgamma(1,.01)
+taubb~dgamma(1,.01)
+
+}

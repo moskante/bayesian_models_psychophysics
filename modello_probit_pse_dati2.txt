@@ -1,0 +1,28 @@
+model {
+
+ for (i in 1:noss){
+ 
+    y[i]~ dbinom(mu[i],n[i])
+    ex[i]<--alpha[subject[i],mask[i]]*beta[subject[i],mask[i]]+beta[subject[i],mask[i]]*x[i]
+    mu[i]<-phi(ex[i])
+    }
+
+    
+ for (i in 1:nsubj){
+ for (h in 1:2)
+{alpha[i,h]~dnorm(aa[cluster[i],h],taua[cluster[i],h])
+beta[i,h]~dnorm(bb[cluster[i],h],taub[cluster[i],h])
+        }
+
+}
+for (h in 1 : 3)
+{ 
+for (k in 1:2)
+{aa[h,k]~dnorm(0,tauaa)
+bb[h,k]~dnorm(0,taubb)
+taua[h,k]~dgamma(1,.001)
+taub[h,k]~dgamma(1,.001)
+ }}
+tauaa~dgamma(1,.01)
+taubb~dgamma(1,.01)
+}

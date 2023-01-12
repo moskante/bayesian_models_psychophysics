@@ -1,0 +1,27 @@
+model {
+
+ for (i in 1:noss){
+    y[i]~ dbinom(mu[i],n[i])
+    ex[i]<--alpha[subject[i],vibration[i]+1]*beta[subject[i],vibration[i]+1]+beta[subject[i],vibration[i]+1]*x[i]    
+    mu[i]<-phi(ex[i])
+    }
+for (h in 1:2)
+{
+ for (i in 1:nsubj){
+    
+alpha[i,h]~dnorm(aa[h],taua[i])
+beta[i,h]~dnorm(bb[h],taub[i])
+}
+
+aa[h]~dnorm(0,tauaa)
+bb[h]~dnorm(0,taubb)        
+        }
+for (i in 1:nsubj){
+taua[i]~dgamma(.1,.001)
+taub[i]~dgamma(.1,.001)}
+
+tauaa~dgamma(1,.01)
+taubb~dgamma(1,.01)
+
+
+}
