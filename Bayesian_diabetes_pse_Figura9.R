@@ -32,9 +32,9 @@ if(tidy_all){
 
 
 
-# First load the neurodiab_backup_2021-11-29 file 
+# load data --------------------------------------------------------------------
 
-load("data.raw.RData")
+load("esperimento2.RData")
 
 
 attach(data.raw)
