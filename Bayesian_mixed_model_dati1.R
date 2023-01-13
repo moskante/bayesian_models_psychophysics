@@ -182,8 +182,8 @@ for(j in 1:2){
 
 write.csv(y1,"y1probit_vibration_individuale.csv")
 
-# ------------------------------------------------------------------------------
-# estimate by subject
+# estimate by subject-----------------------------------------------------------
+
 
 parameters=c("aa","bb")
 
