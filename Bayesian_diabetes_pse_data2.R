@@ -16,10 +16,10 @@ library(tidyverse)
 library(fastDummies)
 library(rjags)
 
-# First load the neurodiab_backup_2021-11-29 file 
+# Load the data-----------------------------------------------------------------
 
-load("data.raw.RData")
-
+#load("data.raw.RData")
+load("esperimento2.RData")
 
 attach(data.raw)
 
@@ -35,7 +35,7 @@ soggetto=rep(0,600)
 clusters=rep(0,60)
 masks=rep(0,60)
 
-# soggetti in ordine alfabetico
+# subjects in alphabetical order
 for (i in 1:60)
 {soggetto=soggetto+i*dummyid[,i+1]}
 
@@ -54,6 +54,7 @@ speedmasking[masking==0]=0
 input=list(noss=600,y=faster,n=faster+slower,x=speed.cms,nsubj=60,subject=soggetto,cluster=clusters,mask=maskingnew+1)
 
 
+# run jags model at individual level--------------------------------------------
 
 modello1 <- jags.model("modello_probit_pse_dati2.txt",data=input,n.chains=3)
 
@@ -79,9 +80,8 @@ param[i,2:3]=quantile(y1[,i],c(.025,.975))
 }
 
 
-# figure 6 ------------------------------------------------------------------------
-# PSE and Slope
-# diabetes
+# figures 7 and 8: denisty plots for pse and slope-----------------------------------------------
+
 diab_marginal <- list()
 
 # cluster 1 = bio1/moderate
@@ -135,9 +135,10 @@ do_plot_diab <- function(data, filename){
   
 }
 
+# figures 7 and 8
 plot_diabetes_marginal <-  map2(diab_marginal, list("diabetes_marginal_pse.pdf", "diabetes_marginal_slope.pdf"),  do_plot_diab )
 
-#-------------------------------------------------------------------------------------
+# run jags model at population level--------------------------------------------
 
 update(modello1, 50000)
 
@@ -155,56 +156,8 @@ y1=as.array(snew[[1]])
 y2=apply(y1,2,mean)
 y2
 
-# --------------------------------------------------------------------------------
-# scatterplot
 
-# data_id <- data.raw %>%
-#   filter(masking == 0) %>%
-#   select(id, cluster_foot) %>%
-#   group_by(cluster_foot) %>%
-#   group_split()
-#   
-# # not working - match with id
-# # sort id in alfabetic order!
-# y2_tibble <- tibble(
-#   estimate = y2,
-#   parameter = c(rep("pse", 120), rep("slope", 120)),
-#   masking = rep(c(rep(0,60),rep(1,60)),2),
-#   group = rep(c(rep("moderate", 20), rep("controls", 20), rep("mild", 20)),4),
-#   participant = rep(str_c("S", 1:60), 4),
-#   id = rep(c(unique(data_id[[3]]$id), unique(data_id[[1]]$id), unique(data_id[[2]]$id)),4) # alphabetic order by clusters - not working...
-#   #id = rep(unique(data.raw$id), 4) # alphabetic order - not working
-#   ) %>%
-#   pivot_wider(
-#     names_from = parameter,
-#     values_from = estimate
-#   )%>%
-#   expand_grid(speed.cms = seq(from = 0, to = 7, by = .1)) %>%
-#   mutate(
-#     intercept = - (pse * slope),
-#     predictions = pnorm(q = speed.cms, mean = pse, sd = slope)
-#   )
-# 
-# 
-# ggplot(dplyr::filter(data.raw, id %in% c("BeRu", "mavi0602", "FaPo")),
-#        mapping = aes(x = speed.cms, y = proportion, col = as.factor(masking))) +
-#   geom_point()+
-#   geom_line(dplyr::filter(y2_tibble, id %in% c("BeRu", "mavi0602", "FaPo") ),
-#             mapping = aes(x = speed.cms, y = predictions, col = as.factor(masking))) +
-#   ylab("Proportion of Faster Speed") +
-#   xlab("Speed [cm/s]") +
-#   facet_wrap(~ id, ncol = 3) +
-#   #geom_line(data = newdfr.ctr, aes(x = speed.cms, y = predict.glmm)) +
-#   theme(legend.position= "none") +
-#   scale_x_continuous(breaks = c(0.63, 3.43, 6.24)) +
-#   scale_y_continuous(breaks = c(0.0, 0.5, 1.0)) +
-#   scale_color_grey(start = 0.2, end = 0.8)
-# 
-
-# ------------------------------------------------------------------------------
-# density plot Figure 7
-
-# recover ids from the dummy matrix
+# recover ids from the dummy matrix---------------------------------------------
 id_names <- names(dummyid)[-1] %>%
   str_remove(".data_") 
 
@@ -219,22 +172,7 @@ for(i in 1:2){
 
 id_names_vector <- c(id_names_to[[1]], id_names_to[[2]])
 
-# runs loop across participants and for masking
 
-# names_individuals_diab <- vector(mode = "character", length = 120)
-# names_individuals_diab_b <- vector(mode = "character", length = 60)
-# counter <- 0
-# 
-# for(i in 0:1){
-#   for(k in 1:60){
-#     counter <- counter + 1
-#     names_individuals_diab[[counter]] <- str_c("s", k, "_", i)
-#     
-#     if(i == 0){
-#       names_individuals_diab_b[[counter]] <- str_c("s", k)
-#     }
-#   }
-# }
 
 
 # PSE and Slope
@@ -275,7 +213,7 @@ for(parameter in c("pse", "slope")){
       #                ifelse(subject %in% names_individuals_diab_b[21:40], "controls", "mild") )
     )
   
-  # density plot
+# figures 9 and 10: density plots for each cluster-------------------------------
   save_plot <- 
     ggplot(data = diab_indiv[[parameter]], 
                       mapping = aes(x = estimate, group = subject, color = group)) +
@@ -296,7 +234,7 @@ summary_data <- diab_indiv[["slope"]] %>%
   )
 
 
-#-------------------------------------------------------------------------------------
+#run jags model with probit-----------------------------------------------------
 
 write.csv(y1,"y1individual_pse_dati2.csv")
 

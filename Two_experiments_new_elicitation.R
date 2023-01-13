@@ -1,4 +1,4 @@
-setwd("~/projects_ongoing/MixedPsy_tutorial/code_ bayesian_glmm")
+
 
 load("esperimento1.RData")
 load("esperimento2.RData")
