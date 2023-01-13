@@ -48,6 +48,8 @@ soggetto[subject=="RV"]=9
 
 input=list(noss=126,y=faster,n=faster+slower,x=speed,vibration=vibr,nsubj=9,subject=soggetto)
 
+# run JAGS model----------------------------------------------------------------
+
 modello1 <- jags.model("modello_pse_dati1.txt",data=input,n.chains=3)
 #update(modello1, 500000)
 update(modello1, 50000)
@@ -63,12 +65,14 @@ snew = coda.samples(
 y1=as.array(snew[[1]])
 y2=apply(y1,2,mean)
 y2
+
+# This doesn't run: modify or delete?
 erroremodello(input,y2,0,1)
 
 #matrix y1 , rows interations
 
-# ------------------------------------------------------------------------------
-# figure by subj 
+# density plot for subjects-----------------------------------------------------
+
 
 names_participants <- vector(mode = "character", length = 18)
 
@@ -256,7 +260,9 @@ snew = coda.samples(
 y1=as.array(snew[[1]])
 y2=apply(y1,2,mean)
 y2
+# This line also not running: modify or delete?
 errore=erroremodello(input,y2)
+
 l1=quantile(y1[,1],c(.025 ,.975))[2]-quantile(y1[,1],c(.025 ,.975))[1]
 l2=quantile(y1[,2],c(.025 ,.975))[2]-quantile(y1[,2],c(.025 ,.975))[1]
 
