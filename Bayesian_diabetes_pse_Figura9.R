@@ -98,8 +98,8 @@ y2
 write.csv(y1,"y1overall_1111.cvs")
 
 
-# ------------------------------------------------------------------------------
-# prior elicitation
+#  prior elicitation------------------------------------------------------------
+
 
 load("esperimento2.RData")
 load("esperimento1.RData")
@@ -128,7 +128,7 @@ y2=apply(y1,2,mean)
 y2
 
 
-errorio2=erroremodello2(input,y2,1,1)
+#errorio2=erroremodello2(input,y2,1,1)
 
 write.csv(y1,"y1joint_1111.cvs")
 
