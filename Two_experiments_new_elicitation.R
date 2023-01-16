@@ -1,7 +1,9 @@
-
+# load data---------------------------------------------------------------------
 
 load("esperimento1.RData")
 load("esperimento2.RData")
+
+# load libraries----------------------------------------------------------------
 
 library(rjags)
 library(tidyverse)
@@ -12,11 +14,10 @@ zeros2=rep(0,600)
 
 # elicitation for a0 = 0.75 ----------------------------------------------------
 
-#mettere valore a0
 a0=0.75
 input=list(noss2=600,y2=data.raw$faster,n2=data.raw$faster+data.raw$slower,x2=data.raw$speed.cms,nsubj2=60,subject2=subject,cluster2=clusters,mask2=maskingnew+1,noss1=126,y1=vibro_exp3$faster,n1=vibro_exp3$faster+vibro_exp3$slower,x1=vibro_exp3$speed,vibration1=vibr,nsubj1=9,subject1=soggetto,a0=a0,zeros1=zeros1,zeros2=zeros2)
 
-
+# run jags model across individuals---------------------------------------------
 
 modello1 <- jags.model("Two_experiments_new_elicitation.txt",data=input,n.chains=3)
 

@@ -9,14 +9,14 @@
 # green participants are part of the bio1 group which had shown alterations of vibration sensation to the foot
 
 
-# Load libraries----------------------------------------------------------------
+# load libraries----------------------------------------------------------------
 
 library(lme4)
 library(tidyverse)
 library(fastDummies)
 library(rjags)
 
-# Load the data-----------------------------------------------------------------
+# load the data-----------------------------------------------------------------
 
 #load("data.raw.RData")
 load("esperimento2.RData")
@@ -53,6 +53,8 @@ speedmasking[masking==0]=0
 
 input=list(noss=600,y=faster,n=faster+slower,x=speed.cms,nsubj=60,subject=soggetto,cluster=clusters,mask=maskingnew+1)
 
+#Set the following line to TRUE if you would like to save all the figures
+do_save <- FALSE
 
 # run jags model at individual level--------------------------------------------
 
@@ -71,7 +73,6 @@ snew = coda.samples(
 
 y1=as.array(snew[[1]])
 y2=apply(y1,2,mean)
-y2
 
 param=matrix(0,12,3)
 for (i in 1:12)
@@ -79,14 +80,13 @@ for (i in 1:12)
 param[i,2:3]=quantile(y1[,i],c(.025,.975))
 }
 
-
 # figures 7 and 8: denisty plots for pse and slope-----------------------------------------------
 
 diab_marginal <- list()
 
-# cluster 1 = bio1/moderate
-# cluster 3 = bio0/mild
-# cluster 2 = ctr
+# cluster 1 = moderate
+# cluster 3 = mild
+# cluster 2 = controls
 
 diab_marginal[["pse"]] <- as_tibble(y1[,1:6]) %>%
   rename(
@@ -121,21 +121,26 @@ diab_marginal[["slope"]] <- as_tibble(y1[,7:12]) %>%
     masking = ifelse(masking == 0, "no masking", "masking")
     )
 
-do_plot_diab <- function(data, filename){
+do_plot_diab <- function(data, filename, do_save = FALSE){
   
   save_plot <- ggplot(data = data,
                       mapping = aes(x = estimate, color = group)) +
     geom_density()+
     facet_wrap(~ masking) +
-    theme(text = element_text(size = 12), legend.position = "none")
+    theme(text = element_text(size = 12))
   
-  ggsave(filename, save_plot, width = 85, height = 60, units = "mm")
+  if(do_save == TRUE){
+    ggsave(filename, save_plot, width = 85, height = 60, units = "mm")
+  }
   
   return(save_plot)
   
 }
 
 # figures 7 and 8
+# here we used the function map2 of the map family instead of the for loop
+# set do_save to TRUE in line 123 to export the plots
+
 plot_diabetes_marginal <-  map2(diab_marginal, list("diabetes_marginal_pse.pdf", "diabetes_marginal_slope.pdf"),  do_plot_diab )
 
 # run jags model at population level--------------------------------------------
@@ -154,7 +159,6 @@ snew = coda.samples(
 
 y1=as.array(snew[[1]])
 y2=apply(y1,2,mean)
-y2
 
 
 # recover ids from the dummy matrix---------------------------------------------
@@ -209,8 +213,6 @@ for(parameter in c("pse", "slope")){
       masking = ifelse(masking == 0, "no masking", "masking"),
       group = ifelse(subject %in% names_by_group[[1]]$id, "controls", 
                      ifelse(subject %in% names_by_group[[2]]$id, "mild", "moderate") )
-      # group = ifelse(subject %in% names_individuals_diab_b[1:20], "moderate", 
-      #                ifelse(subject %in% names_individuals_diab_b[21:40], "controls", "mild") )
     )
   
 # figures 9 and 10: density plots for each cluster-------------------------------
@@ -218,13 +220,13 @@ for(parameter in c("pse", "slope")){
     ggplot(data = diab_indiv[[parameter]], 
                       mapping = aes(x = estimate, group = subject, color = group)) +
     geom_density()+
-    facet_grid(group ~ masking) +
-    theme(legend.position = "none")
+    facet_grid(group ~ masking)
   
-  filename <- str_c("diabetes_subjects_", parameter, ".pdf")
-  
-  ggsave(filename, save_plot)
-  
+  if(do_save == TRUE){
+    filename <- str_c("diabetes_subjects_", parameter, ".pdf")
+    ggsave(filename, save_plot)
+
+  }
 }
 
 summary_data <- diab_indiv[["slope"]] %>%
@@ -234,30 +236,4 @@ summary_data <- diab_indiv[["slope"]] %>%
   )
 
 
-#run jags model with probit-----------------------------------------------------
 
-write.csv(y1,"y1individual_pse_dati2.csv")
-
-
-modello1 <- jags.model("modello_probit_pse_dati2.txt",data=input,n.chains=3)
-
-update(modello1, 50000)
-
-parameters=c("aa","bb")
-
-
-snew = coda.samples(
-  model =modello1,
-  variable.names = parameters,
-  thin = 1,
-  n.iter = 5000 )
-
-y1=as.array(snew[[1]])
-y2=apply(y1,2,mean)
-y2
-
-param=matrix(0,12,3)
-for (i in 1:12)
-{param[i,1]=mean(y1[,i])
-param[i,2:3]=quantile(y1[,i],c(.025,.975))
-}

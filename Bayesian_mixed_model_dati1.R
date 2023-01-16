@@ -16,8 +16,9 @@ vibro_exp3 <- vibro_exp3 %>%
     masking = ifelse(vibration == 0, "no masking", "masking")
   )
 
-# maybe without attach data
-attach(vibro_exp3)
+
+#Set the following line to TRUE if you would like to save all the figures
+do_save <- FALSE
 
 # fitting glmm -----------------------------------------------------------------
 # This is the general linear mixed model as the one in Dallmann et al., 2015. 
@@ -31,6 +32,9 @@ glmm.vibro <- glmer(cbind(faster, slower) ~ speed.cms + masking + speed.cms:mask
 
 # Variables need to be passed to Jags as a list and this is why we created new 
 # vectors for each variable below
+
+# attach data
+attach(vibro_exp3)
 
 vibr=0*speed
 vibr[vibration=="32"]=1
@@ -49,6 +53,8 @@ soggetto[subject=="RV"]=9
 
 input=list(noss=126,y=faster,n=faster+slower,x=speed,vibration=vibr,nsubj=9,subject=soggetto)
 
+# detach data set
+detach(vibro_exp3)
 
 modello1 <- jags.model("modello_pse_dati1.txt",data=input,n.chains=3)
 
@@ -77,8 +83,6 @@ y2=apply(y1,2,mean)
 
 names_participants <- vector(mode = "character", length = 18)
 
-#Set the following line to TRUE if you would like to save the figures
-do_save <- FALSE
 
 # names in alphabetic order
 id_names <- vibro_exp3 %>%
@@ -194,75 +198,39 @@ snew = coda.samples(
 
 y1=as.array(snew[[1]])
 y2=apply(y1,2,mean)
-y2
 
 # figures 1 and 2: density plots for experiment 1: pse and slope----------------
 
 
 vibr_marginal <- list(pse = as_tibble(y1[,1:2]), slope = as_tibble(y1[,3:4]))
 
+save_plot <- list()
 
 for(parameter in c("pse", "slope")){
   
-  #This is for the individual PSE renames as subjects and masking 0,1
   names(vibr_marginal[[parameter]]) <- c("no masking", "masking")
   
-  # Now do pivot longer to move all the values into one column 
+  # pivot longer to move all the values into one column 
   vibr_marginal[[parameter]]  <-  vibr_marginal[[parameter]]%>%
     pivot_longer(cols = everything(), 
                  names_to = c("masking"), values_to = "estimate")
   
   # density plot
-  save_plot <- 
+  save_plot[[parameter]] <- 
     ggplot(data = vibr_marginal[[parameter]], 
            mapping = aes(x = estimate, color = masking)) +
     geom_density()+
-    theme(text = element_text(size = 12), legend.position = "none")+
+    theme(text = element_text(size = 12))+
     # scale_x_continuous(breaks = ) +
     labs(x = "parameter")
+  
+  
+  # change do_save at line 23 to TRUE to export plots
+  if(do_save == TRUE){
   
   filename <- str_c("vibration_marginal_", parameter, ".pdf")
   
   ggsave(filename, save_plot, height = 70, width = 85, units = "mm")
+  }
   
 }
-
-
-# run jags probit model on the data--------------------------------------------------
-
-
-modello1 <- jags.model("modello_probit_dati1.txt",data=input,n.chains=3)
-update(modello1, 500000)
-
-parameters=c("alpha","beta")
-
-snew = coda.samples(
-  model =modello1,
-  variable.names = parameters,
-  thin = 1,
-  n.iter = 5000 )
-
-y1=as.array(snew[[1]])
-y2=apply(y1,2,mean)
-y2
-write.csv(y1,"y1probit_par_individuale2807.csv")
-
-parameters=c("aa","bb")
-
-snew = coda.samples(
-  model =modello1,
-  variable.names = parameters,
-  thin = 1,
-  n.iter = 5000 )
-
-y1=as.array(snew[[1]])
-y2=apply(y1,2,mean)
-y2
-
-# This line also not running: modify or delete?
-errore=erroremodello(input,y2)
-
-l1=quantile(y1[,1],c(.025 ,.975))[2]-quantile(y1[,1],c(.025 ,.975))[1]
-l2=quantile(y1[,2],c(.025 ,.975))[2]-quantile(y1[,2],c(.025 ,.975))[1]
-
-write.csv(y1,"y1probit_par_overall_2807.csv")
