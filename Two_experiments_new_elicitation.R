@@ -12,6 +12,10 @@ zeros1=rep(0,126)
 zeros2=rep(0,600)
 
 
+#Set the following line to TRUE if you would like to save all the figures
+do_save <- FALSE
+
+
 # elicitation for a0 = 0.75 ----------------------------------------------------
 
 a0=0.75
@@ -34,10 +38,9 @@ snew = coda.samples(
 
 y1=as.array(snew[[1]])
 y2=apply(y1,2,mean)
-y2
 
 
-# figure marginal --------------------------------------------------------------
+# figures 1 and 2---------------------------------------------------------------
 
 ctr_marginal <- list(pse = as_tibble(y1[,1:8]), slope = as_tibble(y1[,9:16]))
 
@@ -56,12 +59,16 @@ for(parameter in c("pse", "slope")){
   save_plot <- 
     ggplot(data = ctr_marginal[[parameter]], 
            mapping = aes(x = estimate, color = masking)) +
-    geom_density()+
-    theme(legend.position = "none")
+    geom_density()
   
-  filename <- str_c("vibration_marginal_", parameter, ".pdf")
-  
-  ggsave(filename, save_plot)
+  # change do_save at line 16 to TRUE to export plots
+  if(do_save == TRUE){
+    
+    filename <- str_c("vibration_marginal_", parameter, ".pdf")
+    
+    ggsave(filename, save_plot)
+    
+  }
   
 }
 
@@ -78,7 +85,6 @@ snew = coda.samples(
 
 y1=as.array(snew[[1]])
 y2=apply(y1,2,mean)
-y2
 
 write.csv(y1,"two_experiments_elicitation_individual_0.csv")
 

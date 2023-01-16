@@ -199,8 +199,8 @@ snew = coda.samples(
 y1=as.array(snew[[1]])
 y2=apply(y1,2,mean)
 
-# figures 1 and 2: density plots for experiment 1: pse and slope----------------
 
+# density plots for experiment 1: pse and slope----------------
 
 vibr_marginal <- list(pse = as_tibble(y1[,1:2]), slope = as_tibble(y1[,3:4]))
 
