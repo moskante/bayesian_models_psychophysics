@@ -4,9 +4,12 @@ R and JAGS code and companion data sets for the article
 Bayesian Psychophysics: Bayesian Hierarchical Models and Prior Elicitation for Fitting Psychometric Functions
 by Maura Mezzetti, Colleen P. Ryan, Priscilla Balestrucci, Francesco Lacquaniti and Alessandro Moscatelli. (2023)
 
-The file "analysis_data_set_1" refers to section 3.1 of the article.
-The file "analysis_data_set_2" refers to section 3.2 of the article.
-The file "analysis_elicitation_3" refers to section 4 of the article.
+The file "analysis_data_set_1.R" refers to section 3.1 of the article.
+The file "analysis_data_set_2.R" refers to section 3.2 of the article.
+The file "analysis_elicitation_3.R" refers to section 4 of the article.
+
+Models in JAGS are defined in the txt files. Within the R codes, rjags is used to run the Bayesian models specified in 
+the txt files.
 
 Data-sets for the first and second files (esperimento1.Rdata and esperimento_2.Rdata) 
 are taken repectively from the two articles listed below.
